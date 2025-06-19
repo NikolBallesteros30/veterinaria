@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Administrador de Citas Veterinarias</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"  rel="stylesheet"/>
+  <style>
+  body {
+    background-color: #fffaf8;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  h1 {
+    color: #cf6c95;
+    font-weight: bold;
+  }
+  .btn-success {
+    background-color: #cf6c95;
+    border: none;
+    transition: background-color 0.3s ease;
+  }
+  .btn-success:hover {
+    background-color: #cf6c95;
+  }
+  .form-select,
+  .form-control {
+    border-radius: 0.375rem;
+    border: 1px solid #cf6c95;
+  }
+
+.card-body {
+  text-align: left;
+}
+
+.card-title {
+  text-align: center;
+}
+
+  .card-cita {
+    border-radius: 1rem;
+    border: 1px solid #ffe6f0;
+    box-shadow: 0 4px 12px rgba(255, 105, 180, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background-color: #fff;
+  }
+  .card-cita:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(255, 105, 180, 0.2);
+  }
+  .card-cita img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  margin: 0 auto 15px;
+  display: block;
+}
+  .invalid-feedback {
+    display: block;
+    color: #2f84d3;
+    font-size: 0.85rem;
+    margin-top: 2px;
+  }
+  .modal-header {
+    background-color: #f1c6dc;
+    color: white;
+  }
+  .btn-close-white {
+    filter: invert(1);
+  }
+
+  /* Botones Editar y Eliminar */
+  .btn-warning.btn-sm {
+    background-color: #f596a6; 
+    border: none;
+    color: white;
+    transition: background-color 0.3s ease;
+  }
+
+  .btn-warning.btn-sm:hover {
+    background-color: #df7f9f;
+  }
+
+  .btn-danger.btn-sm {
+    background-color: #814a66;
+    border: none;
+    color: white;
+    transition: background-color 0.3s ease;
+  }
+
+  .btn-danger.btn-sm:hover {
+    background-color: #a55d85;
+  }
+</style>
+  </style>
+</head>
+<body>
+<div class="container py-4">
+  <h1 class="text-center mb-4">Administrador de Citas</h1>
+  <div class="d-flex justify-content-between mb-3">
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#registroModal">Agregar Cita</button>
+    <select id="filtroEstado" class="form-select w-auto">
+      <option value="">Todas</option>
+      <option value="Abierta">Abierta</option>
+      <option value="Terminada">Terminada</option>
+      <option value="Anulada">Anulada</option>
+    </select>
+    <input type="text" id="busqueda" class="form-control w-25" placeholder="Buscar por mascota o propietario"/>
+  </div>
+  <div id="contenedorTarjetas" class="row g-4"></div>
+</div>
+
+<!-- Modal Registro/Edición -->
+<div class="modal fade" id="registroModal" tabindex="-1" aria-labelledby="registroModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="registroModalLabel">Agregar Cita</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formularioCita">
+          <input type="hidden" id="indiceEditar"/>
+          <div class="mb-3">
+            <label for="nombreMascota" class="form-label">Nombre Mascota</label>
+            <input type="text" class="form-control" id="nombreMascota"/>
+            <div class="invalid-feedback" id="error-nombreMascota"></div>
+          </div>
+          <div class="mb-3">
+            <label for="nombrePropietario" class="form-label">Nombre del Propietario</label>
+            <input type="text" class="form-control" id="nombrePropietario"/>
+            <div class="invalid-feedback" id="error-nombrePropietario"></div>
+          </div>
+          <div class="mb-3">
+            <label for="telefono" class="form-label">Teléfono</label>
+            <input type="number" class="form-control" id="telefono"/>
+            <div class="invalid-feedback" id="error-telefono"></div>
+          </div>
+          <div class="mb-3">
+            <label for="fechaCita" class="form-label">Fecha de Cita</label>
+            <input type="date" class="form-control" id="fechaCita"/>
+            <div class="invalid-feedback" id="error-fechaCita"></div>
+          </div>
+          <div class="mb-3">
+            <label for="horaCita" class="form-label">Hora de Cita</label>
+            <input type="time" class="form-control" id="horaCita"/>
+            <div class="invalid-feedback" id="error-horaCita"></div>
+          </div>
+          <div class="mb-3">
+            <label for="tipoMascota" class="form-label">Tipo de Mascota</label>
+            <select class="form-select" id="tipoMascota">
+              <option value="">Seleccione...</option>
+              <option value="Perro">Perro</option>
+              <option value="Gato">Gato</option>
+              <option value="Pájaro">Pájaro</option>
+              <option value="Hamster">Hamster</option>
+              <option value="Iguana">Iguana</option>
+              <option value="Conejo">Conejo</option>
+              <option value="Serpiente">Serpiente</option>
+              <option value="Cobaya">Cobaya</option>
+              <option value="Erizo">Erizo</option>
+              <option value="Otro">Otro</option>
+            </select>
+            <div class="invalid-feedback" id="error-tipoMascota"></div>
+          </div>
+          <div class="mb-3">
+            <label for="sintomas" class="form-label">Síntomas (máx. 400 caracteres)</label>
+            <textarea class="form-control" id="sintomas" maxlength="400" rows="3"></textarea>
+            <div class="invalid-feedback" id="error-sintomas"></div>
+          </div>
+          <div class="mb-3">
+            <label for="estado" class="form-label">Estado</label>
+            <select class="form-select" id="estado">
+              <option value="Abierta">Abierta</option>
+              <option value="Terminada">Terminada</option>
+              <option value="Anulada">Anulada</option>
+            </select>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            <button type="submit" class="btn btn-success">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirmación Eliminar -->
+<div class="modal fade" id="confirmarEliminarModal" tabindex="-1" aria-labelledby="confirmarEliminarModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmarEliminarModalLabel">Confirmar Eliminación</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        ¿Está seguro de eliminar esta cita?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger" onclick="eliminarConfirmado()">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Mensaje -->
+<div class="modal fade" id="mensajeModal" tabindex="-1" aria-labelledby="mensajeModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="mensajeModalLabel">Mensaje</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="mensajeModalBody"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> 
+<script>
+  let citas = JSON.parse(localStorage.getItem("citas")) || [];
+  const imagenesMascotas = {
+  Perro: "https://cdn-icons-png.flaticon.com/256/1998/1998627.png",
+  Gato: "https://cdn-icons-png.flaticon.com/512/1998/1998592.png",
+  Pájaro: "https://cdn-icons-png.flaticon.com/512/404/404013.png",
+  Hamster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpKX4g1d5HmwUfaG-1odzFChYOjRzJ2XQmnQ&s",
+  Iguana: "https://cdn-icons-png.flaticon.com/512/2417/2417560.png",
+  Conejo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOBmyrn6gzRJ5l6h5QHRPhzrUzx_pLMXkAfg&s",
+  Serpiente: "https://cdn-icons-png.flaticon.com/512/616/616653.png",
+  Cobaya: "https://media.istockphoto.com/id/1267481320/es/vector/ilustraci%C3%B3n-vectorial-aislada-de-guinea-pig.jpg?s=612x612&w=0&k=20&c=ZGVUYssUG1HuHyGuqrL_J7DVZNaoQBJrTjHwp86cRow=",
+  Erizo: "https://cdn-icons-png.flaticon.com/512/373/373004.png",
+  Otro: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJbagPL7Pm_Oz7uUyDOp4xHXdg0VBYmYbsUv6nuqCnLn97RucpQMK_bMWjRDNpq0AwRH8&usqp=CAU"
+};
+
+  function mostrarMensaje(titulo, mensaje) {
+    document.getElementById("mensajeModalLabel").textContent = titulo;
+    document.getElementById("mensajeModalBody").innerHTML = `<p>${mensaje}</p>`;
+    new bootstrap.Modal(document.getElementById("mensajeModal")).show();
+  }
+
+  function limpiarErrores() {
+    const errores = document.querySelectorAll(".invalid-feedback");
+    errores.forEach(e => e.textContent = "");
+  }
+
+  function validarDatos(datos) {
+    limpiarErrores();
+    let hayError = false;
+
+    if (!datos.nombreMascota) {
+      document.getElementById("error-nombreMascota").textContent = "Por favor complete el nombre de la mascota";
+      hayError = true;
+    }
+
+    if (!datos.nombrePropietario) {
+      document.getElementById("error-nombrePropietario").textContent = "Por favor complete el nombre del propietario";
+      hayError = true;
+    }
+
+    if (!datos.telefono) {
+      document.getElementById("error-telefono").textContent = "Por favor ingrese un número de teléfono";
+      hayError = true;
+    } else if (!/^\d+$/.test(datos.telefono)) {
+      document.getElementById("error-telefono").textContent = "El teléfono debe contener solo números";
+      hayError = true;
+    }
+
+    if (!datos.fechaCita) {
+      document.getElementById("error-fechaCita").textContent = "Por favor seleccione una fecha válida";
+      hayError = true;
+    } else {
+      const fechaHoy = new Date().toISOString().split("T")[0];
+      if (datos.fechaCita < fechaHoy) {
+        document.getElementById("error-fechaCita").textContent = "La fecha debe ser igual o mayor a la actual";
+        hayError = true;
+      }
+    }
+
+    if (!datos.horaCita) {
+      document.getElementById("error-horaCita").textContent = "Por favor seleccione una hora válida";
+      hayError = true;
+    } else {
+      const [hora] = datos.horaCita.split(":").map(Number);
+      if (hora < 8 || hora > 20) {
+        document.getElementById("error-horaCita").textContent = "La hora debe estar entre 8:00 y 20:00";
+        hayError = true;
+      }
+    }
+
+    if (!datos.tipoMascota) {
+      document.getElementById("error-tipoMascota").textContent = "Por favor seleccione un tipo de mascota";
+      hayError = true;
+    }
+
+    if (!datos.sintomas) {
+      document.getElementById("error-sintomas").textContent = "Por favor describa los síntomas";
+      hayError = true;
+    }
+
+    return hayError;
+  }
+
+  function guardarLocalStorage() {
+    localStorage.setItem("citas", JSON.stringify(citas));
+  }
+
+  function pintarCards(filtro = "", textoBusqueda = "") {
+    const contenedorTarjetas = document.getElementById("contenedorTarjetas");
+    contenedorTarjetas.innerHTML = "";
+    const filtradas = citas.filter(c => {
+      if (filtro && c.estado !== filtro) return false;
+      if (textoBusqueda &&
+          !(c.nombreMascota.toLowerCase().includes(textoBusqueda.toLowerCase()) ||
+            c.nombrePropietario.toLowerCase().includes(textoBusqueda.toLowerCase()))) return false;
+      return true;
+    });
+    filtradas.sort((a, b) => new Date(a.fechaCita + "T" + a.horaCita) - new Date(b.fechaCita + "T" + b.horaCita));
+    filtradas.forEach((cita, i) => {
+      const card = document.createElement("div");
+      card.className = "col-md-4";
+      card.innerHTML = `
+        <div class="card card-cita shadow-sm text-center">
+          <div class="card-body">
+            <img src="${imagenesMascotas[cita.tipoMascota]}" alt="${cita.tipoMascota}" class="img-fluid"/>
+            <h5 class="card-title">${cita.nombreMascota}</h5>
+            <p class="card-text"><strong>Propietario:</strong> ${cita.nombrePropietario}<br>
+            <strong>Teléfono:</strong> ${cita.telefono}<br>
+            <strong>Fecha:</strong> ${cita.fechaCita} - ${cita.horaCita}<br>
+            <strong>Tipo:</strong> ${cita.tipoMascota}<br>
+            <strong>Estado:</strong> ${cita.estado}<br>
+            <strong>Síntomas:</strong> ${cita.sintomas}</p>
+            <div class="d-flex justify-content-between">
+              <button class="btn btn-warning btn-sm" onclick="editar(${i})">Editar</button>
+              <button class="btn btn-danger btn-sm" onclick="prepararEliminar(${i})">Eliminar</button>
+            </div>
+          </div>
+        </div>
+      `;
+      contenedorTarjetas.appendChild(card);
+    });
+  }
+
+  // Manejar envío del formulario
+  document.getElementById("formularioCita").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const indice = document.getElementById("indiceEditar").value;
+    const nuevaCita = {
+      nombreMascota: document.getElementById("nombreMascota").value,
+      nombrePropietario: document.getElementById("nombrePropietario").value,
+      telefono: document.getElementById("telefono").value,
+      fechaCita: document.getElementById("fechaCita").value,
+      horaCita: document.getElementById("horaCita").value,
+      tipoMascota: document.getElementById("tipoMascota").value,
+      sintomas: document.getElementById("sintomas").value,
+      estado: document.getElementById("estado").value
+    };
+
+    if (validarDatos(nuevaCita)) return;
+
+    if (indice) {
+      citas[indice] = nuevaCita;
+      mostrarMensaje("Éxito", "Cita actualizada correctamente.");
+    } else {
+      citas.push(nuevaCita);
+      mostrarMensaje("Éxito", "Cita guardada correctamente.");
+    }
+
+    guardarLocalStorage();
+    pintarCards();
+    this.reset();
+    document.getElementById("indiceEditar").value = "";
+    bootstrap.Modal.getInstance(document.getElementById("registroModal")).hide();
+  });
+
+  function editar(i) {
+    const cita = citas[i];
+    document.getElementById("nombreMascota").value = cita.nombreMascota;
+    document.getElementById("nombrePropietario").value = cita.nombrePropietario;
+    document.getElementById("telefono").value = cita.telefono;
+    document.getElementById("fechaCita").value = cita.fechaCita;
+    document.getElementById("horaCita").value = cita.horaCita;
+    document.getElementById("tipoMascota").value = cita.tipoMascota;
+    document.getElementById("sintomas").value = cita.sintomas;
+    document.getElementById("estado").value = cita.estado;
+    document.getElementById("indiceEditar").value = i;
+    new bootstrap.Modal(document.getElementById("registroModal")).show();
+  }
+
+  let indexEliminar = null;
+  function prepararEliminar(i) {
+    indexEliminar = i;
+    new bootstrap.Modal(document.getElementById("confirmarEliminarModal")).show();
+  }
+
+  function eliminarConfirmado() {
+    if (indexEliminar !== null) {
+      citas.splice(indexEliminar, 1);
+      guardarLocalStorage();
+      pintarCards();
+      indexEliminar = null;
+      bootstrap.Modal.getInstance(document.getElementById("confirmarEliminarModal")).hide();
+    }
+  }
+
+  document.getElementById("filtroEstado").addEventListener("change", () => {
+    pintarCards(document.getElementById("filtroEstado").value, document.getElementById("busqueda").value);
+  });
+
+  document.getElementById("busqueda").addEventListener("input", () => {
+    pintarCards(document.getElementById("filtroEstado").value, document.getElementById("busqueda").value);
+  });
+
+  pintarCards();
+</script>
+</body>
+</html>
