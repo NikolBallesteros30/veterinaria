@@ -247,6 +247,12 @@
     errores.forEach(e => e.textContent = "");
   }
 
+  function limpiarFormulario() {
+    document.getElementById("formularioCita").reset();
+    document.getElementById("indiceEditar").value = "";
+    limpiarErrores();
+  }
+
   function validarDatos(datos) {
     limpiarErrores();
     let hayError = false;
@@ -344,7 +350,6 @@
     });
   }
 
-  // Manejar envío del formulario
   document.getElementById("formularioCita").addEventListener("submit", function(e) {
     e.preventDefault();
     const indice = document.getElementById("indiceEditar").value;
@@ -371,9 +376,16 @@
 
     guardarLocalStorage();
     pintarCards();
-    this.reset();
-    document.getElementById("indiceEditar").value = "";
+    limpiarFormulario();
     bootstrap.Modal.getInstance(document.getElementById("registroModal")).hide();
+  });
+
+ 
+  document.getElementById("registroModal").addEventListener("hidden.bs.modal", function() {
+ 
+    if (!document.getElementById("indiceEditar").value) {
+      limpiarFormulario();
+    }
   });
 
   function editar(i) {
@@ -387,8 +399,15 @@
     document.getElementById("sintomas").value = cita.sintomas;
     document.getElementById("estado").value = cita.estado;
     document.getElementById("indiceEditar").value = i;
+    document.getElementById("registroModalLabel").textContent = "Editar Cita";
     new bootstrap.Modal(document.getElementById("registroModal")).show();
   }
+
+ 
+  document.querySelector('[data-bs-target="#registroModal"]').addEventListener("click", function() {
+    document.getElementById("registroModalLabel").textContent = "Agregar Cita";
+    limpiarFormulario();
+  });
 
   let indexEliminar = null;
   function prepararEliminar(i) {
